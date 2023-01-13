@@ -18,70 +18,141 @@ function direction(degrees){
 }
 
 function icon(cloudcover, rain) {
-    if (cloudcover < 20) return "sun.jpg"
+    if (cloudcover < 40) return "sun.jpg"
     if (cloudcover < 80) return "cloudsun.jpg"
     return "cloud.jpg"
 }
 
 function setWeather(data) {
     console.log(data)
+    let time = new Date().getHours()
+    console.log(time)
     let temperature = document.getElementById("temperature");
-    temperature.innerHTML = data.hourly.temperature_2m[0];
+    temperature.innerHTML = data.hourly.temperature_2m[time];
     let wind_speed = document.getElementById("wind_speed");
-    wind_speed.innerHTML = data.hourly.windspeed_10m[0];
+    wind_speed.innerHTML = data.hourly.windspeed_10m[time];
     let apparent_temperature = document.getElementById("apparent_temperature");
-    apparent_temperature.innerHTML = data.hourly.apparent_temperature[0];
+    apparent_temperature.innerHTML = data.hourly.apparent_temperature[time];
     let wind_direction = document.getElementById("wind_direction");
-    wind_direction.innerHTML = direction(data.hourly.winddirection_10m[0])
+    wind_direction.innerHTML = direction(data.hourly.winddirection_10m[time])
     let cloudcover = document.getElementById("cloudcover");
-    cloudcover.innerHTML = data.hourly.cloudcover[0];
+    cloudcover.innerHTML = data.hourly.cloudcover[time];
     let cloudimage = document.getElementById("cloudimage");
-    cloudimage.innerHTML = `<img width="100px" src="images/${icon(data.hourly.cloudcover[0], data.hourly.rain[0])}">`
+    cloudimage.innerHTML = `<img width="100px" src="images/${icon(data.hourly.cloudcover[time], data.hourly.precipitation[time])}">`
 }
 
 function getWeather() {
-    let latitude="38.69"
+    let latitude="38.67"
     let longitude="-9.32"
-    let fields="rain,cloudcover,winddirection_10m,apparent_temperature,temperature_2m,relativehumidity_2m,windspeed_10m"
+    let fields="precipitation,cloudcover,winddirection_10m,apparent_temperature,temperature_2m,relativehumidity_2m,windspeed_10m"
     let url = `https://api.open-meteo.com/v1/forecast?latitude=${latitude}&longitude=${longitude}&current_weather=true&hourly=${fields}`;
     fetch(url)
     .then(response => response.json())
-    .then(data => setWeather(data));
+    .then(data => {setWeather(data); setHourly(data);});
+}
+
+function setHourly(data) {
+    let time = new Date().getHours()
+    console.log(time)
+    let hourly = document.getElementById("hourlines");
+    data.hourly.time.slice(time,time+24).forEach(function(time,idx) {
+        let li = document.createElement("li");
+        li.classList = "houritem"
+        li.innerHTML = `<div>${time.substring(11)}</div><div><img width="50px" src="images/${icon(data.hourly.cloudcover[idx], data.hourly.precipitation[idx])}"></div><div>${data.hourly.temperature_2m[idx]}ºC</div><div>${data.hourly.precipitation[idx]} mm</div>`;
+        hourly.appendChild(li);
+    });
 }
     </script>
 
     <style>
-        
+        body {
+            font-family: Arial, Helvetica, sans-serif;
+            font-size: 16px;
+            background-color: #f0f0f0;
+        }
+        header {
+            background-color: #000000;
+            color: #ffffff;
+            padding: 10px;
+        }
+        section {
+            padding: 10px;
+        }
+        .field {
+            margin: 10px;
+        }
+        .weathercard {
+            display: flex;
+            flex-direction: row;
+            justify-content: space-between;
+            align-items: center;
+            background-color: #ffffff;
+            padding: 10px;
+            border-radius: 10px;
+        }
+        .weathercard {
+            display: flex;
+        }
+        .big {
+            font-size: 300%;
+        }
+        .houritem, .hourheader {
+            display: flex;
+            flex-direction: row;
+            justify-content: left;
+            align-items: center;
+            padding: 10px;
+            background-color: #ffffff;
+            border-radius: 10px;
+            margin: 10px;
+        }
+        .houritem div, .hourheader div {
+            width: 80px;
+            margin: 5px;
+        }
     </style>
 </head>
-    <body>
-        <header>
-            <h1>
-                The weather in Carcavelos
-            </h1>
-        </header>
-        <section>
-            <p>This is a weather page with live data, could become a clone for <a href="https://www.windguru.cz/1060">Windguru</a></a></p>
-            <div>
-            <div id="cloudimage"></div>
-            <div>
-            <div class="field">
-                Temperature: <span id="temperature"></span>ºC
-            </div>
-            <div class="field">
-                Feels like: <span id="apparent_temperature"></span>ºC
-            </div>
-            <div class="field">
-                Wind speed:  <span id="wind_speed"></span> km/h <span id="wind_direction"></span>
-            </div>
-            <div class="field">
-                Cloudcover:  <span id="cloudcover"></span>%
-            </div>
-            </div>
-            </div>
-        </section>
-        <script>
-            getWeather();
-        </script>
-    </body>
+<body>
+    <header>
+        <h1>
+            The weather in Carcavelos
+        </h1>
+    </header>
+    <section>
+        <p>This is a weather page with live data, could become a clone for <a href="https://www.windguru.cz/1060">Windguru</a></a></p>
+        <div class="weathercard">
+        <div id="cloudimage"></div>
+        <div class="weatherinfo big">
+            <span id="temperature"></span>ºC
+        </div>
+        <div class="weatherinfo">
+        <div class="field">
+            Feels like <span id="apparent_temperature"></span>ºC
+        </div>
+        <div class="field">
+            Wind speed  <span id="wind_speed"></span> km/h <span id="wind_direction"></span>
+        </div>
+        <div class="field">
+            Cloudcover  <span id="cloudcover"></span>%
+        </div>
+        </div>
+        </div>
+    </section>
+    <section>
+        <ul id="hourlines">
+        <li class="hourheader"">
+                        <div>Time</div>
+                        <div>Cloud</div>
+                        <div>Temp</div>
+                        <div>Rain</div>
+                    </li>
+        </ul>
+    </section>
+    <footer>
+        <p>Powered by <a href="https://open-meteo.com">Open-Meteo</a></p>
+    </footer>
+    <script>
+        getWeather();
+    </script>
+</body>
 </html>
