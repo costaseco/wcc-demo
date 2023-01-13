@@ -1,0 +1,87 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <meta charset="utf-8">
+    <title>The weather in Carcavelos</title>
+    <script>
+
+function direction(degrees){
+    if (degrees >= 0 && degrees < 22.5) return "N"
+    if (degrees >= 22.5 && degrees < 67.5) return "NE"
+    if (degrees >= 67.5 && degrees < 112.5) return "E"
+    if (degrees >= 112.5 && degrees < 157.5) return "SE"
+    if (degrees >= 157.5 && degrees < 202.5) return "S"
+    if (degrees >= 202.5 && degrees < 247.5) return "SW"
+    if (degrees >= 247.5 && degrees < 292.5) return "W"
+    if (degrees >= 292.5 && degrees < 337.5) return "NW"
+    if (degrees >= 337.5 && degrees < 360) return "N"
+}
+
+function icon(cloudcover, rain) {
+    if (cloudcover < 20) return "sun.jpg"
+    if (cloudcover < 80) return "cloudsun.jpg"
+    return "cloud.jpg"
+}
+
+function setWeather(data) {
+    console.log(data)
+    let temperature = document.getElementById("temperature");
+    temperature.innerHTML = data.hourly.temperature_2m[0];
+    let wind_speed = document.getElementById("wind_speed");
+    wind_speed.innerHTML = data.hourly.windspeed_10m[0];
+    let apparent_temperature = document.getElementById("apparent_temperature");
+    apparent_temperature.innerHTML = data.hourly.apparent_temperature[0];
+    let wind_direction = document.getElementById("wind_direction");
+    wind_direction.innerHTML = direction(data.hourly.winddirection_10m[0])
+    let cloudcover = document.getElementById("cloudcover");
+    cloudcover.innerHTML = data.hourly.cloudcover[0];
+    let cloudimage = document.getElementById("cloudimage");
+    cloudimage.innerHTML = `<img width="100px" src="images/${icon(data.hourly.cloudcover[0], data.hourly.rain[0])}">`
+}
+
+function getWeather() {
+    let latitude="38.69"
+    let longitude="-9.32"
+    let fields="rain,cloudcover,winddirection_10m,apparent_temperature,temperature_2m,relativehumidity_2m,windspeed_10m"
+    let url = `https://api.open-meteo.com/v1/forecast?latitude=${latitude}&longitude=${longitude}&current_weather=true&hourly=${fields}`;
+    fetch(url)
+    .then(response => response.json())
+    .then(data => setWeather(data));
+}
+    </script>
+
+    <style>
+        
+    </style>
+</head>
+    <body>
+        <header>
+            <h1>
+                The weather in Carcavelos
+            </h1>
+        </header>
+        <section>
+            <p>This is a weather page with live data, could become a clone for <a href="https://www.windguru.cz/1060">Windguru</a></a></p>
+            <div>
+            <div id="cloudimage"></div>
+            <div>
+            <div class="field">
+                Temperature: <span id="temperature"></span>ºC
+            </div>
+            <div class="field">
+                Feels like: <span id="apparent_temperature"></span>ºC
+            </div>
+            <div class="field">
+                Wind speed:  <span id="wind_speed"></span> km/h <span id="wind_direction"></span>
+            </div>
+            <div class="field">
+                Cloudcover:  <span id="cloudcover"></span>%
+            </div>
+            </div>
+            </div>
+        </section>
+        <script>
+            getWeather();
+        </script>
+    </body>
+</html>
