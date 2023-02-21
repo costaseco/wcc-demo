@@ -36,6 +36,34 @@ function setWeather(data) {
     cloudimage.innerHTML = `<img width="100px" src="images/${icon(data.hourly.cloudcover[time], data.hourly.precipitation[time])}">`
 }
 
+function setHourly(data) {
+    let h = new Date().getHours()
+    console.log(h)
+    let hourly = document.getElementById("hourlines");
+    let l = data.hourly.time.slice(h,h+24)
+    
+    l.forEach(function(time,idx) {
+        console.log(time)
+        let li = document.createElement("li");
+        li.classList = "houritem"
+        let div1 = document.createElement("div");
+        div1.innerHTML = time.substring(11);
+        let div2 = document.createElement("div");
+        div2.innerHTML = `<img width="50px" src="images/${icon(data.hourly.cloudcover[idx], data.hourly.precipitation[idx])}">`
+        let div3 = document.createElement("div");
+        div3.innerHTML = `${data.hourly.temperature_2m[idx]}ºC`
+        let div4 = document.createElement("div");
+        div4.innerHTML = `${data.hourly.precipitation[idx]} mm`
+        li.appendChild(div1)
+        li.appendChild(div2)
+        li.appendChild(div3)
+        li.appendChild(div4)
+        //li.innerHTML = `<div>${time.substring(11)}</div><div><img width="50px" src="images/${icon(data.hourly.cloudcover[idx], data.hourly.precipitation[idx])}"></div><div>${data.hourly.temperature_2m[idx]}ºC</div><div>${data.hourly.precipitation[idx]} mm</div>`;
+        hourly.appendChild(li);
+    });
+}
+
+
 function getWeather() {
     let latitude="38.67"
     let longitude="-9.32"
@@ -46,14 +74,6 @@ function getWeather() {
     .then(data => {setWeather(data); setHourly(data);});
 }
 
-function setHourly(data) {
-    let time = new Date().getHours()
-    console.log(time)
-    let hourly = document.getElementById("hourlines");
-    data.hourly.time.slice(time,time+24).forEach(function(time,idx) {
-        let li = document.createElement("li");
-        li.classList = "houritem"
-        li.innerHTML = `<div>${time.substring(11)}</div><div><img width="50px" src="images/${icon(data.hourly.cloudcover[idx], data.hourly.precipitation[idx])}"></div><div>${data.hourly.temperature_2m[idx]}ºC</div><div>${data.hourly.precipitation[idx]} mm</div>`;
-        hourly.appendChild(li);
-    });
-}
+window.addEventListener("load", getWeather) // DO THIS
+
+// window.onload = getWeather // DON'T DO THIS
